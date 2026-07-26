@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCCS-SOC — Orange Cyber Command & Security</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000; --surface: #0a0a0a; --panel: #111111; --border: #2a1500;
+    --accent: #FF6600; --accent2: #FF8C00; --danger: #FF2222; --warn: #FFB300;
+    --muted: #995200; --text: #FFE0C0; --text-dim: #CC7733;
+    --font-mono: 'Share Tech Mono', monospace; --font-ui: 'Rajdhani', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-ui); min-height: 100vh; overflow-x: hidden; }
+  body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(255,102,0,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,102,0,0.05) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+  body::after { content:''; position:fixed; top:-200px; left:-200px; width:600px; height:600px; background:radial-gradient(circle,rgba(255,102,0,0.09) 0%,transparent 70%); pointer-events:none; z-index:0; }
+  .container { max-width:1300px; margin:0 auto; padding:0 24px 60px; position:relative; z-index:1; }
+
+  header { padding:32px 0 28px; border-bottom:1px solid var(--border); margin-bottom:36px; display:flex; align-items:center; gap:20px; }
+  .logo-icon { width:48px; height:48px; border:2px solid var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0; animation:pulse-border 3s infinite; }
+  @keyframes pulse-border { 0%,100%{box-shadow:0 0 8px rgba(255,102,0,0.5)} 50%{box-shadow:0 0 28px rgba(255,102,0,1)} }
+  .logo-icon svg { width:26px; height:26px; }
+  .header-text h1 { font-family:var(--font-ui); font-size:28px; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:var(--accent); text-shadow:0 0 28px rgba(255,102,0,0.8); }
+  .header-text p { font-family:var(--font-mono); font-size:11px; color:#FFF; letter-spacing:2px; margin-top:2px; }
+  .header-badge { margin-left:auto; font-family:var(--font-mono); font-size:10px; color:var(--accent2); border:1px solid var(--accent2); padding:4px 10px; letter-spacing:2px; animation:blink 2s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* TABS */
+  .tabs { display:flex; gap:4px; margin-bottom:28px; border-bottom:1px solid var(--border); }
+  .tab-btn { font-family:var(--font-mono); font-size:11px; letter-spacing:3px; text-transform:uppercase; padding:12px 24px; background:none; border:none; border-bottom:2px solid transparent; color:var(--muted); cursor:pointer; transition:all 0.2s; margin-bottom:-1px; }
+  .tab-btn:hover { color:var(--text); }
+  .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+
+  /* API KEYS */
+  .api-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+  .api-section { background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--accent); padding:20px 24px; }
+  .section-label { font-family:var(--font-mono); font-size:10px; color:#FFF; letter-spacing:3px; text-transform:uppercase; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .section-label::before { content:'//'; color:var(--accent); }
+  .input-row { display:flex; gap:12px; align-items:center; }
+  input[type="text"],input[type="password"],textarea { background:var(--surface); border:1px solid var(--border); color:#FFF; font-family:var(--font-mono); font-size:13px; padding:10px 14px; outline:none; transition:border-color 0.2s,box-shadow 0.2s; width:100%; }
+  input:focus,textarea:focus { border-color:var(--accent); box-shadow:0 0 14px rgba(255,102,0,0.25); }
+  textarea { resize:vertical; min-height:110px; line-height:1.8; }
+  .toggle-vis { background:none; border:1px solid var(--border); color:var(--muted); padding:10px 14px; cursor:pointer; font-family:var(--font-mono); font-size:11px; white-space:nowrap; transition:all 0.2s; flex-shrink:0; }
+  .toggle-vis:hover { border-color:var(--accent); color:var(--accent); }
+  .input-section { background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--accent2); padding:20px 24px; margin-bottom:24px; }
+  .ip-hint { font-family:var(--font-mono); font-size:11px; color:#FFF; margin-top:10px; }
+
+  /* ACTION BAR */
+  .action-bar { display:flex; gap:12px; margin-bottom:36px; align-items:center; flex-wrap:wrap; }
+  .btn-primary { background:transparent; border:2px solid var(--accent); color:var(--accent); font-family:var(--font-ui); font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; padding:12px 28px; cursor:pointer; transition:all 0.25s; position:relative; overflow:hidden; display:flex; align-items:center; gap:10px; }
+  .btn-primary::before { content:''; position:absolute; inset:0; background:var(--accent); transform:translateX(-100%); transition:transform 0.25s; z-index:-1; }
+  .btn-primary:hover { color:var(--bg); }
+  .btn-primary:hover::before { transform:translateX(0); }
+  .btn-secondary { background:transparent; border:1px solid var(--border); color:var(--text-dim); font-family:var(--font-ui); font-weight:600; font-size:12px; letter-spacing:2px; text-transform:uppercase; padding:12px 20px; cursor:pointer; transition:all 0.2s; }
+  .btn-secondary:hover { border-color:var(--muted); color:var(--text); }
+  .progress-info { font-family:var(--font-mono); font-size:12px; color:var(--muted); margin-left:auto; }
+  .export-btn { font-family:var(--font-mono); font-size:10px; letter-spacing:2px; background:none; border:1px solid var(--border); color:var(--muted); padding:6px 12px; cursor:pointer; transition:all 0.2s; text-transform:uppercase; }
+  .export-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* STATS */
+  .results-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .results-title { font-family:var(--font-mono); font-size:11px; color:var(--accent); letter-spacing:3px; text-transform:uppercase; }
+  .results-count { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+  .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }
+  .stat-card { background:var(--panel); border:1px solid var(--border); padding:16px 20px; text-align:center; }
+  .stat-num { font-family:var(--font-mono); font-size:28px; font-weight:700; line-height:1; margin-bottom:6px; }
+  .stat-label { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+  .stat-card.danger .stat-num { color:#FFF; text-shadow:0 0 12px rgba(255,255,255,0.4); }
+  .stat-card.warn .stat-num   { color:#FFF; text-shadow:0 0 12px rgba(255,255,255,0.4); }
+  .stat-card.safe .stat-num   { color:var(--accent); text-shadow:0 0 12px rgba(255,102,0,0.6); }
+  .stat-card.info .stat-num   { color:var(--accent); }
+
+  /* TABLE */
+  .results-table-wrap { overflow-x:auto; border:1px solid var(--border); }
+  table { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:12px; }
+  thead { background:var(--surface); border-bottom:1px solid var(--border); }
+  th { padding:12px 14px; text-align:left; font-size:10px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; white-space:nowrap; }
+  th.vt-col { color:var(--accent); }
+  tbody tr { border-bottom:1px solid rgba(42,21,0,0.5); transition:background 0.15s; }
+  tbody tr:hover { background:rgba(255,102,0,0.03); }
+  td { padding:12px 14px; vertical-align:middle; }
+
+  .ioc-cell { color:var(--accent); font-size:12px; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:var(--font-mono); }
+
+  .verdict { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:700; white-space:nowrap; }
+  .verdict.malicious  { background:rgba(255,34,34,0.12);  color:#FFF; border:1px solid rgba(255,34,34,0.5); text-shadow:0 0 8px rgba(255,255,255,0.3); }
+  .verdict.suspicious { background:rgba(255,179,0,0.12);  color:#FFF; border:1px solid rgba(255,179,0,0.5); }
+  .verdict.clean      { background:rgba(255,102,0,0.1);   color:var(--accent2); border:1px solid rgba(255,140,0,0.4); }
+  .verdict.loading    { background:rgba(255,102,0,0.08);  color:var(--accent); border:1px solid rgba(255,102,0,0.4); }
+  .verdict.error      { background:rgba(255,34,34,0.08);  color:#ff6644; border:1px solid rgba(255,34,34,0.3); }
+
+  @keyframes blink2 { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .dot-blink { animation:blink2 1s step-end infinite; }
+
+  .bar-wrap { width:70px; background:var(--surface); height:4px; border:1px solid var(--border); display:inline-block; vertical-align:middle; }
+  .bar-fill { height:100%; transition:width 0.4s; }
+  .bar-fill.red    { background:var(--danger); box-shadow:0 0 6px rgba(255,34,34,0.7); }
+  .bar-fill.yellow { background:var(--warn); }
+  .bar-fill.green  { background:var(--accent); box-shadow:0 0 6px rgba(255,102,0,0.5); }
+  .bar-fill.gray   { background:var(--muted); }
+  .num-cell.red    { color:var(--danger); }
+  .num-cell.yellow { color:var(--warn); }
+  .num-cell.green  { color:var(--accent); }
+
+  .abuse-bar-wrap { width:60px; background:var(--surface); height:4px; border:1px solid var(--border); display:inline-block; vertical-align:middle; }
+  .abuse-bar-fill.low    { background:var(--accent); }
+  .abuse-bar-fill.medium { background:var(--warn); }
+  .abuse-bar-fill.high   { background:var(--danger); box-shadow:0 0 6px rgba(255,34,34,0.7); }
+  .abuse-num.low    { color:var(--accent); }
+  .abuse-num.medium { color:var(--warn); }
+  .abuse-num.high   { color:var(--danger); }
+
+  .link-cell a { color:var(--accent); text-decoration:none; font-size:11px; border-bottom:1px solid rgba(255,102,0,0.3); margin-right:8px; transition:border-color 0.2s; }
+  .link-cell a:hover { border-bottom-color:var(--accent); }
+  .country-cell { color:var(--text-dim); font-size:11px; }
+
+  #toast { position:fixed; bottom:28px; right:28px; background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--danger); color:var(--text); font-family:var(--font-mono); font-size:12px; padding:14px 20px; max-width:360px; z-index:999; display:none; animation:slideIn 0.3s ease; }
+  @keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+
+  .empty-state { text-align:center; padding:60px 20px; border:1px dashed var(--border); color:#FFF; }
+  .empty-state .big-icon { font-size:40px; margin-bottom:16px; opacity:0.7; }
+  .empty-state p { font-family:var(--font-mono); font-size:12px; letter-spacing:1px; }
+
+  .spinner { width:12px; height:12px; border:2px solid rgba(255,102,0,0.3); border-top-color:var(--accent); border-radius:50%; animation:spin 0.6s linear infinite; display:inline-block; flex-shrink:0; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  @media (max-width:900px) {
+    .api-grid { grid-template-columns:1fr; }
+    .stats-row { grid-template-columns:repeat(2,1fr); }
+    header { flex-wrap:wrap; }
+    .header-badge { margin-left:0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#FF6600" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
+        <circle cx="12" cy="12" r="4" fill="rgba(255,102,0,0.2)"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>OCCS-SOC</h1>
+      <p>// ORANGE CYBER COMMAND & SECURITY — THREAT INTELLIGENCE v3.0</p>
+    </div>
+    <div class="header-badge">● ONLINE</div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('ip')">⊕ Adresses IP</button>
+    <button class="tab-btn" onclick="switchTab('hash')">⊞ Hash (MD5/SHA)</button>
+    <button class="tab-btn" onclick="switchTab('url')">⊘ URLs / Domaines</button>
+  </div>
+
+  <!-- ===================== TAB IP ===================== -->
+  <div id="tab-ip" class="tab-pane active">
+    <div class="api-grid">
+      <div class="api-section">
+        <div class="section-label">VirusTotal API</div>
+        <div class="input-row">
+          <input type="password" id="ip-apiKeyVT" placeholder="Clé API VirusTotal..." autocomplete="off"/>
+          <button class="toggle-vis" onclick="toggleKey('ip-apiKeyVT',this)">AFFICHER</button>
+        </div>
+        <div class="ip-hint">Clé gratuite sur <strong style="color:var(--accent)">virustotal.com</strong> → Account → API Key</div>
+      </div>
+      <div class="api-section">
+        <div class="section-label">AbuseIPDB API</div>
+        <div class="input-row">
+          <input type="password" id="ip-apiKeyAbuse" placeholder="Clé API AbuseIPDB..." autocomplete="off"/>
+          <button class="toggle-vis" onclick="toggleKey('ip-apiKeyAbuse',this)">AFFICHER</button>
+        </div>
+        <div class="ip-hint">Clé gratuite sur <strong style="color:var(--accent)">abuseipdb.com</strong> → Account → API → Create Key</div>
+      </div>
+    </div>
+    <div class="input-section">
+      <div class="section-label">Adresses IP cibles</div>
+      <textarea id="ip-input" placeholder="Entrez les adresses IP (une par ligne ou séparées par virgules)&#10;&#10;8.8.8.8&#10;1.1.1.1&#10;185.220.101.1"></textarea>
+      <div class="ip-hint">⟶ Supporte IPv4 et IPv6 · Limite : 4 req/min (VT) · 1000 req/jour (AbuseIPDB)</div>
+    </div>
+    <div class="action-bar">
+      <button class="btn-primary" id="ip-scanBtn" onclick="startScan('ip')"><span>▶</span><span>LANCER L'ANALYSE</span></button>
+      <button class="btn-secondary" onclick="clearAll('ip')">RÉINITIALISER</button>
+      <button class="export-btn" onclick="exportCSV('ip')" id="ip-exportBtn" style="display:none">⬇ EXPORTER CSV</button>
+      <div class="progress-info" id="ip-progressInfo"></div>
+    </div>
+    <div id="ip-resultsSection" style="display:none">
+      <div class="results-header">
+        <div class="results-title">// Rapport IP</div>
+        <div class="results-count" id="ip-resultsCount"></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card danger"><div class="stat-num" id="ip-statMalicious">0</div><div class="stat-label">Malveillantes</div></div>
+        <div class="stat-card warn"><div class="stat-num" id="ip-statSuspicious">0</div><div class="stat-label">Suspectes</div></div>
+        <div class="stat-card safe"><div class="stat-num" id="ip-statClean">0</div><div class="stat-label">Propres</div></div>
+        <div class="stat-card info"><div class="stat-num" id="ip-statTotal">0</div><div class="stat-label">Total</div></div>
+      </div>
+      <div class="results-table-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Adresse IP</th><th>Verdict</th>
+            <th class="vt-col">● VT Détecteurs</th><th class="vt-col">● VT Score</th>
+            <th class="vt-col">● Abus Score</th><th class="vt-col">● Signalements</th>
+            <th>Pays</th><th>AS / ISP</th><th>Liens</th>
+          </tr></thead>
+          <tbody id="ip-resultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="ip-emptyState" class="empty-state">
+      <div class="big-icon">◎</div>
+      <p>AUCUNE ANALYSE EN COURS<br><br>Configurez vos clés API, entrez les IPs<br>et lancez l'analyse.</p>
+    </div>
+  </div>
+
+  <!-- ===================== TAB HASH ===================== -->
+  <div id="tab-hash" class="tab-pane">
+    <div class="api-grid" style="grid-template-columns:1fr">
+      <div class="api-section">
+        <div class="section-label">VirusTotal API</div>
+        <div class="input-row">
+          <input type="password" id="hash-apiKeyVT" placeholder="Clé API VirusTotal..." autocomplete="off"/>
+          <button class="toggle-vis" onclick="toggleKey('hash-apiKeyVT',this)">AFFICHER</button>
+        </div>
+        <div class="ip-hint">Clé gratuite sur <strong style="color:var(--accent)">virustotal.com</strong> → Account → API Key</div>
+      </div>
+    </div>
+    <div class="input-section">
+      <div class="section-label">Hash MD5 / SHA-1 / SHA-256</div>
+      <textarea id="hash-input" placeholder="Entrez les hash (un par ligne)&#10;&#10;Exemples:&#10;44d88612fea8a8f36de82e1278abb02f&#10;da39a3ee5e6b4b0d3255bfef95601890afd80709&#10;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"></textarea>
+      <div class="ip-hint">⟶ Supporte MD5 (32 car.), SHA-1 (40 car.), SHA-256 (64 car.) · Limite : 4 req/min</div>
+    </div>
+    <div class="action-bar">
+      <button class="btn-primary" id="hash-scanBtn" onclick="startScan('hash')"><span>▶</span><span>LANCER L'ANALYSE</span></button>
+      <button class="btn-secondary" onclick="clearAll('hash')">RÉINITIALISER</button>
+      <button class="export-btn" onclick="exportCSV('hash')" id="hash-exportBtn" style="display:none">⬇ EXPORTER CSV</button>
+      <div class="progress-info" id="hash-progressInfo"></div>
+    </div>
+    <div id="hash-resultsSection" style="display:none">
+      <div class="results-header">
+        <div class="results-title">// Rapport Hash</div>
+        <div class="results-count" id="hash-resultsCount"></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card danger"><div class="stat-num" id="hash-statMalicious">0</div><div class="stat-label">Malveillants</div></div>
+        <div class="stat-card warn"><div class="stat-num" id="hash-statSuspicious">0</div><div class="stat-label">Suspects</div></div>
+        <div class="stat-card safe"><div class="stat-num" id="hash-statClean">0</div><div class="stat-label">Propres</div></div>
+        <div class="stat-card info"><div class="stat-num" id="hash-statTotal">0</div><div class="stat-label">Total</div></div>
+      </div>
+      <div class="results-table-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Hash</th><th>Type</th><th>Verdict</th>
+            <th class="vt-col">● VT Détecteurs</th><th class="vt-col">● VT Score</th>
+            <th>Nom fichier</th><th>Type fichier</th><th>Lien</th>
+          </tr></thead>
+          <tbody id="hash-resultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="hash-emptyState" class="empty-state">
+      <div class="big-icon">⊞</div>
+      <p>AUCUNE ANALYSE EN COURS<br><br>Entrez vos hash MD5, SHA-1 ou SHA-256<br>et lancez l'analyse.</p>
+    </div>
+  </div>
+
+  <!-- ===================== TAB URL ===================== -->
+  <div id="tab-url" class="tab-pane">
+    <div class="api-grid" style="grid-template-columns:1fr">
+      <div class="api-section">
+        <div class="section-label">VirusTotal API</div>
+        <div class="input-row">
+          <input type="password" id="url-apiKeyVT" placeholder="Clé API VirusTotal..." autocomplete="off"/>
+          <button class="toggle-vis" onclick="toggleKey('url-apiKeyVT',this)">AFFICHER</button>
+        </div>
+        <div class="ip-hint">Clé gratuite sur <strong style="color:var(--accent)">virustotal.com</strong> → Account → API Key</div>
+      </div>
+    </div>
+    <div class="input-section">
+      <div class="section-label">URLs / Domaines cibles</div>
+      <textarea id="url-input" placeholder="Entrez les URLs ou domaines (un par ligne)&#10;&#10;Exemples:&#10;https://example.com&#10;malicious-domain.ru&#10;http://phishing-site.net/login"></textarea>
+      <div class="ip-hint">⟶ Supporte URLs complètes et domaines · Limite : 4 req/min</div>
+    </div>
+    <div class="action-bar">
+      <button class="btn-primary" id="url-scanBtn" onclick="startScan('url')"><span>▶</span><span>LANCER L'ANALYSE</span></button>
+      <button class="btn-secondary" onclick="clearAll('url')">RÉINITIALISER</button>
+      <button class="export-btn" onclick="exportCSV('url')" id="url-exportBtn" style="display:none">⬇ EXPORTER CSV</button>
+      <div class="progress-info" id="url-progressInfo"></div>
+    </div>
+    <div id="url-resultsSection" style="display:none">
+      <div class="results-header">
+        <div class="results-title">// Rapport URL / Domaine</div>
+        <div class="results-count" id="url-resultsCount"></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card danger"><div class="stat-num" id="url-statMalicious">0</div><div class="stat-label">Malveillantes</div></div>
+        <div class="stat-card warn"><div class="stat-num" id="url-statSuspicious">0</div><div class="stat-label">Suspectes</div></div>
+        <div class="stat-card safe"><div class="stat-num" id="url-statClean">0</div><div class="stat-label">Propres</div></div>
+        <div class="stat-card info"><div class="stat-num" id="url-statTotal">0</div><div class="stat-label">Total</div></div>
+      </div>
+      <div class="results-table-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>URL / Domaine</th><th>Verdict</th>
+            <th class="vt-col">● VT Détecteurs</th><th class="vt-col">● VT Score</th>
+            <th>Catégorie</th><th>Lien</th>
+          </tr></thead>
+          <tbody id="url-resultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="url-emptyState" class="empty-state">
+      <div class="big-icon">⊘</div>
+      <p>AUCUNE ANALYSE EN COURS<br><br>Entrez vos URLs ou domaines<br>et lancez l'analyse.</p>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const state = { ip:{results:[],scanning:false,abort:false}, hash:{results:[],scanning:false,abort:false}, url:{results:[],scanning:false,abort:false} };
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['ip','hash','url'][i]===tab));
+    document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-'+tab).classList.add('active');
+  }
+
+  function toggleKey(id,btn){
+    const f=document.getElementById(id);
+    f.type=f.type==='password'?'text':'password';
+    btn.textContent=f.type==='password'?'AFFICHER':'MASQUER';
+  }
+
+  function showToast(msg,warn=false){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.style.borderLeftColor=warn?'var(--warn)':'var(--danger)';
+    t.style.display='block'; setTimeout(()=>t.style.display='none',4500);
+  }
+
+  function parseIPs(raw){
+    const re=/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$|^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/;
+    return[...new Set(raw.split(/[\n,;]+/).map(s=>s.trim()).filter(s=>s&&re.test(s)))];
+  }
+
+  function parseHashes(raw){
+    const re=/^([a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$/;
+    return[...new Set(raw.split(/[\n,;]+/).map(s=>s.trim()).filter(s=>s&&re.test(s)))];
+  }
+
+  function parseURLs(raw){
+    return[...new Set(raw.split(/[\n,;]+/).map(s=>s.trim()).filter(s=>s&&s.length>3))];
+  }
+
+  function hashType(h){ return h.length===32?'MD5':h.length===40?'SHA-1':'SHA-256'; }
+
+  function getVerdict(mal,sus){ return mal>=1?'malicious':sus>=1?'suspicious':'clean'; }
+  function verdictLabel(v){ return{malicious:'⚠ MALVEILLANT',suspicious:'◈ SUSPECT',clean:'✓ PROPRE',loading:'◌ ANALYSE...',error:'✕ ERREUR'}[v]||'—'; }
+  function getBarClass(v){ return{malicious:'red',suspicious:'yellow',clean:'green'}[v]||'gray'; }
+  function getAbuseClass(s){ return s>=50?'high':s>=20?'medium':'low'; }
+
+  // ---- RENDER ROWS ----
+  function renderIPRow(r,i){
+    const load=r.verdict==='loading';
+    const total=r.vtTotal||90;
+    const malPct=r.vtMalicious!=null?Math.round((r.vtMalicious/total)*100):0;
+    const bc=getBarClass(r.verdict);
+    const nc={malicious:'red',suspicious:'yellow',clean:'green'}[r.verdict]||'';
+    const ac=r.abuseScore!=null?getAbuseClass(r.abuseScore):'';
+    return`<tr id="row-ip-${i}">
+      <td style="color:var(--muted);font-size:11px">${String(i+1).padStart(2,'0')}</td>
+      <td class="ioc-cell">${r.ip}</td>
+      <td>${load?`<span class="verdict loading"><span class="spinner"></span>ANALYSE</span>`:`<span class="verdict ${r.verdict}">${verdictLabel(r.verdict)}</span>`}</td>
+      <td class="num-cell ${nc}">${load?'<span class="dot-blink">—</span>':(r.vtMalicious!=null?r.vtMalicious+' / '+total:'—')}</td>
+      <td>${load?'<span style="color:var(--muted)">—</span>':`<div style="display:flex;align-items:center;gap:8px"><div class="bar-wrap"><div class="bar-fill ${bc}" style="width:${malPct}%"></div></div><span class="num-cell ${nc}" style="font-size:11px">${malPct}%</span></div>`}</td>
+      <td>${load?'<span class="dot-blink" style="color:var(--muted)">—</span>':r.abuseScore!=null?`<div style="display:flex;align-items:center;gap:8px"><div class="abuse-bar-wrap"><div class="abuse-bar-fill ${ac}" style="width:${r.abuseScore}%"></div></div><span class="abuse-num ${ac}" style="font-size:11px">${r.abuseScore}%</span></div>`:'<span style="color:var(--muted)">N/A</span>'}</td>
+      <td style="color:var(--accent);font-size:12px">${load?'<span class="dot-blink" style="color:var(--muted)">—</span>':(r.abuseReports!=null?r.abuseReports:'N/A')}</td>
+      <td class="country-cell">${r.country||(load?'—':'N/A')}</td>
+      <td style="color:var(--text-dim);font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.as||(load?'—':'N/A')}</td>
+      <td class="link-cell"><a href="https://www.virustotal.com/gui/ip-address/${r.ip}" target="_blank">↗ VT</a><a href="https://www.abuseipdb.com/check/${r.ip}" target="_blank">↗ ABU</a></td>
+    </tr>`;
+  }
+
+  function renderHashRow(r,i){
+    const load=r.verdict==='loading';
+    const total=r.vtTotal||70;
+    const malPct=r.vtMalicious!=null?Math.round((r.vtMalicious/total)*100):0;
+    const bc=getBarClass(r.verdict);
+    const nc={malicious:'red',suspicious:'yellow',clean:'green'}[r.verdict]||'';
+    return`<tr id="row-hash-${i}">
+      <td style="color:var(--muted);font-size:11px">${String(i+1).padStart(2,'00')}</td>
+      <td class="ioc-cell" title="${r.hash}">${r.hash.substring(0,20)}...</td>
+      <td style="color:var(--accent);font-size:11px">${hashType(r.hash)}</td>
+      <td>${load?`<span class="verdict loading"><span class="spinner"></span>ANALYSE</span>`:`<span class="verdict ${r.verdict}">${verdictLabel(r.verdict)}</span>`}</td>
+      <td class="num-cell ${nc}">${load?'<span class="dot-blink">—</span>':(r.vtMalicious!=null?r.vtMalicious+' / '+total:'—')}</td>
+      <td>${load?'<span style="color:var(--muted)">—</span>':`<div style="display:flex;align-items:center;gap:8px"><div class="bar-wrap"><div class="bar-fill ${bc}" style="width:${malPct}%"></div></div><span class="num-cell ${nc}" style="font-size:11px">${malPct}%</span></div>`}</td>
+      <td style="color:var(--text-dim);font-size:11px">${load?'—':(r.fileName||'N/A')}</td>
+      <td style="color:var(--text-dim);font-size:11px">${load?'—':(r.fileType||'N/A')}</td>
+      <td class="link-cell"><a href="https://www.virustotal.com/gui/file/${r.hash}" target="_blank">↗ VT</a></td>
+    </tr>`;
+  }
+
+  function renderURLRow(r,i){
+    const load=r.verdict==='loading';
+    const total=r.vtTotal||90;
+    const malPct=r.vtMalicious!=null?Math.round((r.vtMalicious/total)*100):0;
+    const bc=getBarClass(r.verdict);
+    const nc={malicious:'red',suspicious:'yellow',clean:'green'}[r.verdict]||'';
+    const encoded=btoa(r.url).replace(/=/g,'');
+    return`<tr id="row-url-${i}">
+      <td style="color:var(--muted);font-size:11px">${String(i+1).padStart(2,'00')}</td>
+      <td class="ioc-cell" title="${r.url}">${r.url.substring(0,40)}${r.url.length>40?'...':''}</td>
+      <td>${load?`<span class="verdict loading"><span class="spinner"></span>ANALYSE</span>`:`<span class="verdict ${r.verdict}">${verdictLabel(r.verdict)}</span>`}</td>
+      <td class="num-cell ${nc}">${load?'<span class="dot-blink">—</span>':(r.vtMalicious!=null?r.vtMalicious+' / '+total:'—')}</td>
+      <td>${load?'<span style="color:var(--muted)">—</span>':`<div style="display:flex;align-items:center;gap:8px"><div class="bar-wrap"><div class="bar-fill ${bc}" style="width:${malPct}%"></div></div><span class="num-cell ${nc}" style="font-size:11px">${malPct}%</span></div>`}</td>
+      <td style="color:var(--text-dim);font-size:11px">${load?'—':(r.category||'N/A')}</td>
+      <td class="link-cell"><a href="https://www.virustotal.com/gui/url/${encoded}" target="_blank">↗ VT</a></td>
+    </tr>`;
+  }
+
+  function updateStats(type){
+    const done=state[type].results.filter(r=>r.verdict&&r.verdict!=='loading'&&r.verdict!=='error');
+    document.getElementById(`${type}-statMalicious`).textContent=done.filter(r=>r.verdict==='malicious').length;
+    document.getElementById(`${type}-statSuspicious`).textContent=done.filter(r=>r.verdict==='suspicious').length;
+    document.getElementById(`${type}-statClean`).textContent=done.filter(r=>r.verdict==='clean').length;
+    document.getElementById(`${type}-statTotal`).textContent=state[type].results.length;
+    document.getElementById(`${type}-resultsCount`).textContent=`${done.length} / ${state[type].results.length} analysés`;
+  }
+
+  // ---- FETCH FUNCTIONS ----
+  async function fetchVT(endpoint,key){
+    const url=`https://corsproxy.io/?url=${encodeURIComponent('https://www.virustotal.com/api/v3/'+endpoint)}`;
+    const r=await fetch(url,{headers:{'x-apikey':key}});
+    if(r.status===429)throw new Error('RATE_LIMIT_VT');
+    if(r.status===401)throw new Error('AUTH_ERROR_VT');
+    if(!r.ok)throw new Error('VT_ERR_'+r.status);
+    return r.json();
+  }
+
+  async function fetchAbuse(ip,key){
+    const url=`https://corsproxy.io/?url=${encodeURIComponent('https://api.abuseipdb.com/api/v2/check?ipAddress='+ip+'&maxAgeInDays=90')}`;
+    const r=await fetch(url,{headers:{'Key':key,'Accept':'application/json'}});
+    if(r.status===429)throw new Error('RATE_LIMIT_ABU');
+    if(r.status===401)throw new Error('AUTH_ERROR_ABU');
+    if(!r.ok)throw new Error('ABU_ERR');
+    return r.json();
+  }
+
+  // ---- MAIN SCAN ----
+  async function startScan(type){
+    const s=state[type];
+    if(s.scanning){s.abort=true;return;}
+
+    const vtKey=document.getElementById(`${type}-apiKeyVT`).value.trim();
+    const abuKey=type==='ip'?document.getElementById('ip-apiKeyAbuse').value.trim():'';
+    const raw=document.getElementById(`${type}-input`).value;
+
+    if(!vtKey){showToast('Clé API VirusTotal requise.');return;}
+
+    let iocs=[];
+    if(type==='ip')iocs=parseIPs(raw);
+    else if(type==='hash')iocs=parseHashes(raw);
+    else iocs=parseURLs(raw);
+
+    if(!iocs.length){showToast('Aucun IOC valide détecté. Vérifiez le format.');return;}
+
+    s.scanning=true;s.abort=false;
+    s.results=iocs.map(v=>({[type==='ip'?'ip':type==='hash'?'hash':'url']:v,verdict:'loading'}));
+
+    document.getElementById(`${type}-scanBtn`).innerHTML='<span class="spinner"></span><span>ARRÊTER</span>';
+    document.getElementById(`${type}-resultsSection`).style.display='block';
+    document.getElementById(`${type}-emptyState`).style.display='none';
+    document.getElementById(`${type}-exportBtn`).style.display='none';
+
+    const tbody=document.getElementById(`${type}-resultsBody`);
+    tbody.innerHTML=s.results.map((r,i)=>type==='ip'?renderIPRow(r,i):type==='hash'?renderHashRow(r,i):renderURLRow(r,i)).join('');
+    updateStats(type);
+
+    let processed=0;
+    for(let i=0;i<iocs.length;i++){
+      if(s.abort)break;
+      const ioc=iocs[i];
+      document.getElementById(`${type}-progressInfo`).textContent=`Analyse ${i+1}/${iocs.length} — ${ioc.substring(0,40)}`;
+
+      try{
+        let vtData=null,abuData=null;
+
+        if(type==='ip'){
+          const d=await fetchVT(`ip_addresses/${ioc}`,vtKey);
+          const st=d?.data?.attributes?.last_analysis_stats||{};
+          const asn=d?.data?.attributes?.asn;
+          vtData={malicious:st.malicious||0,suspicious:st.suspicious||0,total:Object.values(st).reduce((a,b)=>a+b,0)||90,country:d?.data?.attributes?.country||null,as:asn?`AS${asn} ${d?.data?.attributes?.as_owner||''}`.trim():d?.data?.attributes?.as_owner};
+          if(abuKey){
+            try{
+              const ab=await fetchAbuse(ioc,abuKey);
+              abuData={abuseScore:ab?.data?.abuseConfidenceScore??0,abuseReports:ab?.data?.totalReports??0,country:ab?.data?.countryCode||null,isp:ab?.data?.isp||null};
+            }catch(e){}
+          }
+          const vtMal=vtData.malicious,vtSus=vtData.suspicious,abuScore=abuData?.abuseScore??0;
+          s.results[i]={ip:ioc,verdict:getVerdict(vtMal+(abuScore>=50?1:0),vtSus+(abuScore>=20?1:0)),vtMalicious:vtMal,vtSuspicious:vtSus,vtTotal:vtData.total,abuseScore:abuData?.abuseScore??null,abuseReports:abuData?.abuseReports??null,country:vtData.country||abuData?.country||null,as:vtData.as||abuData?.isp||null};
+
+        }else if(type==='hash'){
+          const d=await fetchVT(`files/${ioc}`,vtKey);
+          const st=d?.data?.attributes?.last_analysis_stats||{};
+          const mal=st.malicious||0,sus=st.suspicious||0;
+          s.results[i]={hash:ioc,verdict:getVerdict(mal,sus),vtMalicious:mal,vtSuspicious:sus,vtTotal:Object.values(st).reduce((a,b)=>a+b,0)||70,fileName:d?.data?.attributes?.meaningful_name||d?.data?.attributes?.names?.[0]||null,fileType:d?.data?.attributes?.type_description||null};
+
+        }else{
+          // URL: submit then get
+          const encoded=btoa(ioc).replace(/=/g,'');
+          let d;
+          try{ d=await fetchVT(`urls/${encoded}`,vtKey); }
+          catch(e){
+            // If not found, submit URL first
+            const submitUrl=`https://corsproxy.io/?url=${encodeURIComponent('https://www.virustotal.com/api/v3/urls')}`;
+            const form=new URLSearchParams();form.append('url',ioc);
+            await fetch(submitUrl,{method:'POST',headers:{'x-apikey':vtKey,'Content-Type':'application/x-www-form-urlencoded'},body:form.toString()});
+            await new Promise(r=>setTimeout(r,5000));
+            d=await fetchVT(`urls/${encoded}`,vtKey);
+          }
+          const st=d?.data?.attributes?.last_analysis_stats||{};
+          const cats=d?.data?.attributes?.categories||{};
+          const catList=Object.values(cats).slice(0,2).join(', ')||null;
+          const mal=st.malicious||0,sus=st.suspicious||0;
+          s.results[i]={url:ioc,verdict:getVerdict(mal,sus),vtMalicious:mal,vtSuspicious:sus,vtTotal:Object.values(st).reduce((a,b)=>a+b,0)||90,category:catList};
+        }
+
+      }catch(e){
+        if(e.message==='RATE_LIMIT_VT'){
+          showToast('Rate limit VirusTotal. Pause 60s...',true);
+          document.getElementById(`${type}-progressInfo`).textContent='⏳ Pause 60s...';
+          await new Promise(r=>setTimeout(r,61000));
+          i--;continue;
+        }
+        if(e.message==='AUTH_ERROR_VT')showToast('Clé VirusTotal invalide.');
+        const key=type==='ip'?'ip':type==='hash'?'hash':'url';
+        s.results[i]={[key]:iocs[i],verdict:'error'};
+      }
+
+      const row=document.getElementById(`row-${type}-${i}`);
+      if(row)row.outerHTML=type==='ip'?renderIPRow(s.results[i],i):type==='hash'?renderHashRow(s.results[i],i):renderURLRow(s.results[i],i);
+      processed++;updateStats(type);
+
+      if(i<iocs.length-1&&!s.abort){
+        document.getElementById(`${type}-progressInfo`).textContent='Pause 15s (rate limit)...';
+        await new Promise(r=>setTimeout(r,15000));
+      }
+    }
+
+    s.scanning=false;s.abort=false;
+    document.getElementById(`${type}-scanBtn`).innerHTML='<span>▶</span><span>LANCER L\'ANALYSE</span>';
+    document.getElementById(`${type}-progressInfo`).textContent=`✓ Terminé — ${processed} IOC(s) traités.`;
+    document.getElementById(`${type}-exportBtn`).style.display='block';
+  }
+
+  function clearAll(type){
+    const s=state[type];s.abort=true;s.scanning=false;s.results=[];
+    document.getElementById(`${type}-input`).value='';
+    document.getElementById(`${type}-resultsBody`).innerHTML='';
+    document.getElementById(`${type}-resultsSection`).style.display='none';
+    document.getElementById(`${type}-emptyState`).style.display='block';
+    document.getElementById(`${type}-progressInfo`).textContent='';
+    document.getElementById(`${type}-exportBtn`).style.display='none';
+    document.getElementById(`${type}-scanBtn`).innerHTML='<span>▶</span><span>LANCER L\'ANALYSE</span>';
+    [`${type}-statMalicious`,`${type}-statSuspicious`,`${type}-statClean`,`${type}-statTotal`].forEach(id=>document.getElementById(id).textContent='0');
+  }
+
+  function exportCSV(type){
+    const rows=state[type].results.filter(r=>r.verdict!=='loading');
+    if(!rows.length)return;
+    let headers,lines;
+    if(type==='ip'){
+      headers=['IP','Verdict','VT Malveillants','VT Total','VT Score%','Abus Score%','Signalements','Pays','AS/ISP'];
+      lines=rows.map(r=>{const p=r.vtTotal?Math.round((r.vtMalicious/r.vtTotal)*100):0;return[r.ip,r.verdict,r.vtMalicious??'',r.vtTotal??'',p+'%',r.abuseScore??'',r.abuseReports??'',r.country||'',r.as||''].join(',');});
+    }else if(type==='hash'){
+      headers=['Hash','Type','Verdict','VT Malveillants','VT Total','VT Score%','Nom fichier','Type fichier'];
+      lines=rows.map(r=>{const p=r.vtTotal?Math.round((r.vtMalicious/r.vtTotal)*100):0;return[r.hash,hashType(r.hash),r.verdict,r.vtMalicious??'',r.vtTotal??'',p+'%',r.fileName||'',r.fileType||''].join(',');});
+    }else{
+      headers=['URL','Verdict','VT Malveillants','VT Total','VT Score%','Catégorie'];
+      lines=rows.map(r=>{const p=r.vtTotal?Math.round((r.vtMalicious/r.vtTotal)*100):0;return[`"${r.url}"`,r.verdict,r.vtMalicious??'',r.vtTotal??'',p+'%',r.category||''].join(',');});
+    }
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([[headers.join(','),...lines].join('\n')],{type:'text/csv'}));
+    a.download=`occs-soc-${type}_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  }
+</script>
+</body>
+</html>
