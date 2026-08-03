@@ -188,7 +188,8 @@
     <div class="action-bar">
       <button class="btn-primary" id="ip-scanBtn" onclick="startScan('ip')"><span>▶</span><span>LANCER L'ANALYSE</span></button>
       <button class="btn-secondary" onclick="clearAll('ip')">RÉINITIALISER</button>
-      <button class="export-btn" onclick="exportCSV('ip')" id="ip-exportBtn" style="display:none">⬇ EXPORTER CSV</button>
+      <button class="export-btn" onclick="exportCSV('ip')" id="ip-exportBtn" style="display:none">⬇ CSV</button>
+    <button class="export-btn" onclick="exportPDF('ip')" id="ip-exportPdfBtn" style="display:none;border-color:#FF8C00;color:#FF8C00">⬇ PDF</button>
       <div class="progress-info" id="ip-progressInfo"></div>
     </div>
     <div id="ip-resultsSection" style="display:none">
@@ -240,7 +241,8 @@
     <div class="action-bar">
       <button class="btn-primary" id="hash-scanBtn" onclick="startScan('hash')"><span>▶</span><span>LANCER L'ANALYSE</span></button>
       <button class="btn-secondary" onclick="clearAll('hash')">RÉINITIALISER</button>
-      <button class="export-btn" onclick="exportCSV('hash')" id="hash-exportBtn" style="display:none">⬇ EXPORTER CSV</button>
+      <button class="export-btn" onclick="exportCSV('hash')" id="hash-exportBtn" style="display:none">⬇ CSV</button>
+    <button class="export-btn" onclick="exportPDF('hash')" id="hash-exportPdfBtn" style="display:none;border-color:#FF8C00;color:#FF8C00">⬇ PDF</button>
       <div class="progress-info" id="hash-progressInfo"></div>
     </div>
     <div id="hash-resultsSection" style="display:none">
@@ -291,7 +293,8 @@
     <div class="action-bar">
       <button class="btn-primary" id="url-scanBtn" onclick="startScan('url')"><span>▶</span><span>LANCER L'ANALYSE</span></button>
       <button class="btn-secondary" onclick="clearAll('url')">RÉINITIALISER</button>
-      <button class="export-btn" onclick="exportCSV('url')" id="url-exportBtn" style="display:none">⬇ EXPORTER CSV</button>
+      <button class="export-btn" onclick="exportCSV('url')" id="url-exportBtn" style="display:none">⬇ CSV</button>
+    <button class="export-btn" onclick="exportPDF('url')" id="url-exportPdfBtn" style="display:none;border-color:#FF8C00;color:#FF8C00">⬇ PDF</button>
       <div class="progress-info" id="url-progressInfo"></div>
     </div>
     <div id="url-resultsSection" style="display:none">
@@ -559,6 +562,7 @@
     document.getElementById(`${type}-scanBtn`).innerHTML='<span>▶</span><span>LANCER L\'ANALYSE</span>';
     document.getElementById(`${type}-progressInfo`).textContent=`✓ Terminé — ${processed} IOC(s) traités.`;
     document.getElementById(`${type}-exportBtn`).style.display='block';
+    const pdfBtn=document.getElementById(`${type}-exportPdfBtn`); if(pdfBtn) pdfBtn.style.display='block';
   }
 
   function clearAll(type){
@@ -571,6 +575,7 @@
     document.getElementById(`${type}-exportBtn`).style.display='none';
     document.getElementById(`${type}-scanBtn`).innerHTML='<span>▶</span><span>LANCER L\'ANALYSE</span>';
     [`${type}-statMalicious`,`${type}-statSuspicious`,`${type}-statClean`,`${type}-statTotal`].forEach(id=>document.getElementById(id).textContent='0');
+    const pdfBtn=document.getElementById(`${type}-exportPdfBtn`); if(pdfBtn) pdfBtn.style.display='none';
   }
 
   function exportCSV(type){
@@ -595,3 +600,141 @@
 </script>
 </body>
 </html>
+<script>
+// Show PDF buttons alongside CSV buttons
+const origStartScan = startScan;
+
+// Override to also show PDF button
+document.querySelectorAll('[id$="-exportBtn"]').forEach(btn => {
+  const type = btn.id.replace('-exportBtn', '');
+  const observer = new MutationObserver(() => {
+    const pdfBtn = document.getElementById(`${type}-exportPdfBtn`);
+    if (pdfBtn) pdfBtn.style.display = btn.style.display;
+  });
+  observer.observe(btn, { attributes: true, attributeFilter: ['style'] });
+});
+
+function exportPDF(type) {
+  const rows = state[type].results.filter(r => r.verdict !== 'loading');
+  if (!rows.length) return;
+
+  const date = new Date().toLocaleDateString('fr-FR');
+  const typeLabel = type === 'ip' ? 'Adresses IP' : type === 'hash' ? 'Hash' : 'URLs / Domaines';
+
+  let tableHeaders = '';
+  let tableRows = '';
+
+  if (type === 'ip') {
+    tableHeaders = '<th>IP</th><th>Verdict</th><th>VT Malveillants</th><th>VT Score%</th><th>Abus Score%</th><th>Signalements</th><th>Pays</th><th>AS/ISP</th>';
+    tableRows = rows.map(r => {
+      const pct = r.vtTotal ? Math.round((r.vtMalicious / r.vtTotal) * 100) : 0;
+      const color = r.verdict === 'malicious' ? '#FF2222' : r.verdict === 'suspicious' ? '#FFB300' : '#FF6600';
+      return `<tr>
+        <td>${r.ip}</td>
+        <td style="color:${color};font-weight:bold">${r.verdict.toUpperCase()}</td>
+        <td>${r.vtMalicious ?? 'N/A'} / ${r.vtTotal ?? 'N/A'}</td>
+        <td>${pct}%</td>
+        <td>${r.abuseScore ?? 'N/A'}%</td>
+        <td>${r.abuseReports ?? 'N/A'}</td>
+        <td>${r.country || 'N/A'}</td>
+        <td>${r.as || 'N/A'}</td>
+      </tr>`;
+    }).join('');
+  } else if (type === 'hash') {
+    tableHeaders = '<th>Hash</th><th>Type</th><th>Verdict</th><th>VT Malveillants</th><th>VT Score%</th><th>Nom fichier</th>';
+    tableRows = rows.map(r => {
+      const pct = r.vtTotal ? Math.round((r.vtMalicious / r.vtTotal) * 100) : 0;
+      const color = r.verdict === 'malicious' ? '#FF2222' : r.verdict === 'suspicious' ? '#FFB300' : '#FF6600';
+      return `<tr>
+        <td style="font-size:10px">${r.hash}</td>
+        <td>${hashType(r.hash)}</td>
+        <td style="color:${color};font-weight:bold">${r.verdict.toUpperCase()}</td>
+        <td>${r.vtMalicious ?? 'N/A'} / ${r.vtTotal ?? 'N/A'}</td>
+        <td>${pct}%</td>
+        <td>${r.fileName || 'N/A'}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    tableHeaders = '<th>URL</th><th>Verdict</th><th>VT Malveillants</th><th>VT Score%</th><th>Catégorie</th>';
+    tableRows = rows.map(r => {
+      const pct = r.vtTotal ? Math.round((r.vtMalicious / r.vtTotal) * 100) : 0;
+      const color = r.verdict === 'malicious' ? '#FF2222' : r.verdict === 'suspicious' ? '#FFB300' : '#FF6600';
+      return `<tr>
+        <td style="font-size:10px">${r.url}</td>
+        <td style="color:${color};font-weight:bold">${r.verdict.toUpperCase()}</td>
+        <td>${r.vtMalicious ?? 'N/A'} / ${r.vtTotal ?? 'N/A'}</td>
+        <td>${pct}%</td>
+        <td>${r.category || 'N/A'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  const malicious = rows.filter(r => r.verdict === 'malicious').length;
+  const suspicious = rows.filter(r => r.verdict === 'suspicious').length;
+  const clean = rows.filter(r => r.verdict === 'clean').length;
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OCCS-SOC — Rapport ${typeLabel}</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 30px; color: #333; }
+  .header { background: #000; color: #FF6600; padding: 20px 30px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 28px; letter-spacing: 4px; margin: 0; }
+  .header p { font-size: 11px; color: #FFF; margin: 4px 0 0; letter-spacing: 2px; }
+  .header .date { font-size: 12px; color: #FF8C00; text-align: right; }
+  .stats { display: flex; gap: 16px; margin-bottom: 24px; }
+  .stat { flex: 1; border: 1px solid #ddd; padding: 16px; text-align: center; }
+  .stat .num { font-size: 32px; font-weight: bold; }
+  .stat .label { font-size: 11px; color: #999; letter-spacing: 2px; text-transform: uppercase; }
+  .stat.danger .num { color: #FF2222; }
+  .stat.warn .num { color: #FFB300; }
+  .stat.safe .num { color: #FF6600; }
+  .stat.info .num { color: #333; }
+  h2 { color: #FF6600; border-bottom: 2px solid #FF6600; padding-bottom: 8px; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { background: #FF6600; color: #FFF; padding: 10px 8px; text-align: left; font-size: 10px; letter-spacing: 1px; }
+  td { padding: 8px; border-bottom: 1px solid #eee; }
+  tr:nth-child(even) { background: #FFF3E0; }
+  .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>OCCS-SOC</h1>
+    <p>// ORANGE CYBER COMMAND & SECURITY — THREAT INTELLIGENCE</p>
+  </div>
+  <div class="date">
+    Rapport : ${typeLabel}<br>
+    Date : ${date}<br>
+    Total analysés : ${rows.length}
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat danger"><div class="num">${malicious}</div><div class="label">Malveillants</div></div>
+  <div class="stat warn"><div class="num">${suspicious}</div><div class="label">Suspects</div></div>
+  <div class="stat safe"><div class="num">${clean}</div><div class="label">Propres</div></div>
+  <div class="stat info"><div class="num">${rows.length}</div><div class="label">Total</div></div>
+</div>
+
+<h2>// Résultats d'analyse — ${typeLabel}</h2>
+<table>
+  <thead><tr>${tableHeaders}</tr></thead>
+  <tbody>${tableRows}</tbody>
+</table>
+
+<div class="footer">
+  OCCS-SOC — Orange Cyber Command & Security — Document Confidentiel — ${date}
+</div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+}
+</script>
