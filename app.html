@@ -166,7 +166,7 @@
       <div class="api-section">
         <div class="section-label">VirusTotal API</div>
         <div class="input-row">
-          <input type="password" id="ip-apiKeyVT" placeholder="Clé API VirusTotal..." autocomplete="off" value="439b993304c202e88ead1b1cba01d6b43c1b85a71fab643eb316577a09989312"/>
+          <input type="password" id="ip-apiKeyVT" placeholder="Clé API VirusTotal..." autocomplete="off" />
           <button class="toggle-vis" onclick="toggleKey('ip-apiKeyVT',this)">AFFICHER</button>
         </div>
         <div class="ip-hint">Clé gratuite sur <strong style="color:var(--accent)">virustotal.com</strong> → Account → API Key</div>
@@ -174,7 +174,7 @@
       <div class="api-section">
         <div class="section-label">AbuseIPDB API</div>
         <div class="input-row">
-          <input type="password" id="ip-apiKeyAbuse" placeholder="Clé API AbuseIPDB..." autocomplete="off" value="8651e5de4bfd46f9f635e9abd14f4825259ba072d0cc8bd93df88397e15dc839fd03378766d7a8c6"/>
+          <input type="password" id="ip-apiKeyAbuse" placeholder="Clé API AbuseIPDB..." autocomplete="off" />
           <button class="toggle-vis" onclick="toggleKey('ip-apiKeyAbuse',this)">AFFICHER</button>
         </div>
         <div class="ip-hint">Clé gratuite sur <strong style="color:var(--accent)">abuseipdb.com</strong> → Account → API → Create Key</div>
@@ -188,8 +188,6 @@
     <div class="action-bar">
       <button class="btn-primary" id="ip-scanBtn" onclick="startScan('ip')"><span>▶</span><span>LANCER L'ANALYSE</span></button>
       <button class="btn-secondary" onclick="clearAll('ip')">RÉINITIALISER</button>
-      <button class="export-btn" onclick="exportCSV('ip')" id="ip-exportBtn" style="display:none">⬇ CSV</button>
-    <button class="export-btn" onclick="exportPDF('ip')" id="ip-exportPdfBtn" style="display:none;border-color:#FF8C00;color:#FF8C00">⬇ PDF</button>
       <div class="progress-info" id="ip-progressInfo"></div>
     </div>
     <div id="ip-resultsSection" style="display:none">
@@ -203,17 +201,69 @@
         <div class="stat-card safe"><div class="stat-num" id="ip-statClean">0</div><div class="stat-label">Propres</div></div>
         <div class="stat-card info"><div class="stat-num" id="ip-statTotal">0</div><div class="stat-label">Total</div></div>
       </div>
-      <div class="results-table-wrap">
-        <table>
-          <thead><tr>
-            <th>#</th><th>Adresse IP</th><th>Verdict</th>
-            <th class="vt-col">● VT Détecteurs</th><th class="vt-col">● VT Score</th>
-            <th class="vt-col">● Abus Score</th><th class="vt-col">● Signalements</th>
-            <th>Pays</th><th>AS / ISP</th><th>Liens</th>
-          </tr></thead>
-          <tbody id="ip-resultsBody"></tbody>
-        </table>
+
+      <!-- MALVEILLANTES -->
+      <div id="ip-section-malicious" style="display:none;margin-bottom:28px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-family:var(--font-mono);font-size:11px;color:#FF2222;letter-spacing:3px">⚠ MALVEILLANTES (<span id="ip-count-malicious">0</span>)</div>
+          <div style="display:flex;gap:8px">
+            <button class="export-btn" onclick="exportCSVFiltered('ip','malicious')" style="border-color:#FF2222;color:#FF2222">⬇ CSV</button>
+            <button class="export-btn" onclick="exportPDFFiltered('ip','malicious')" style="border-color:#FF2222;color:#FF2222">⬇ PDF</button>
+          </div>
+        </div>
+        <div class="results-table-wrap">
+          <table><thead><tr><th>#</th><th>Adresse IP</th><th>Verdict</th><th class="vt-col">● VT Détecteurs</th><th class="vt-col">● VT Score</th><th class="vt-col">● Abus Score</th><th class="vt-col">● Signalements</th><th>Pays</th><th>AS / ISP</th><th>Liens</th></tr></thead>
+          <tbody id="ip-body-malicious"></tbody></table>
+        </div>
       </div>
+
+      <!-- SUSPECTES -->
+      <div id="ip-section-suspicious" style="display:none;margin-bottom:28px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-family:var(--font-mono);font-size:11px;color:#FFB300;letter-spacing:3px">◈ SUSPECTES (<span id="ip-count-suspicious">0</span>)</div>
+          <div style="display:flex;gap:8px">
+            <button class="export-btn" onclick="exportCSVFiltered('ip','suspicious')" style="border-color:#FFB300;color:#FFB300">⬇ CSV</button>
+            <button class="export-btn" onclick="exportPDFFiltered('ip','suspicious')" style="border-color:#FFB300;color:#FFB300">⬇ PDF</button>
+          </div>
+        </div>
+        <div class="results-table-wrap">
+          <table><thead><tr><th>#</th><th>Adresse IP</th><th>Verdict</th><th class="vt-col">● VT Détecteurs</th><th class="vt-col">● VT Score</th><th class="vt-col">● Abus Score</th><th class="vt-col">● Signalements</th><th>Pays</th><th>AS / ISP</th><th>Liens</th></tr></thead>
+          <tbody id="ip-body-suspicious"></tbody></table>
+        </div>
+      </div>
+
+      <!-- PROPRES -->
+      <div id="ip-section-clean" style="display:none;margin-bottom:28px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-family:var(--font-mono);font-size:11px;color:#FF6600;letter-spacing:3px">✓ PROPRES (<span id="ip-count-clean">0</span>)</div>
+          <div style="display:flex;gap:8px">
+            <button class="export-btn" onclick="exportCSVFiltered('ip','clean')" style="border-color:#FF6600;color:#FF6600">⬇ CSV</button>
+            <button class="export-btn" onclick="exportPDFFiltered('ip','clean')" style="border-color:#FF6600;color:#FF6600">⬇ PDF</button>
+          </div>
+        </div>
+        <div class="results-table-wrap">
+          <table><thead><tr><th>#</th><th>Adresse IP</th><th>Verdict</th><th class="vt-col">● VT Détecteurs</th><th class="vt-col">● VT Score</th><th class="vt-col">● Abus Score</th><th class="vt-col">● Signalements</th><th>Pays</th><th>AS / ISP</th><th>Liens</th></tr></thead>
+          <tbody id="ip-body-clean"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ERREURS -->
+      <div id="ip-section-error" style="display:none;margin-bottom:28px">
+        <div style="font-family:var(--font-mono);font-size:11px;color:#ff6644;letter-spacing:3px;margin-bottom:12px">✕ ERREURS (<span id="ip-count-error">0</span>)</div>
+        <div class="results-table-wrap">
+          <table><thead><tr><th>#</th><th>Adresse IP</th><th>Verdict</th><th>Détail</th></tr></thead>
+          <tbody id="ip-body-error"></tbody></table>
+        </div>
+      </div>
+
+      <!-- LOADING -->
+      <div id="ip-body-loading-wrap" style="display:none">
+        <div class="results-table-wrap">
+          <table><thead><tr><th>#</th><th>Adresse IP</th><th>Verdict</th><th class="vt-col">● VT Détecteurs</th><th class="vt-col">● VT Score</th><th class="vt-col">● Abus Score</th><th class="vt-col">● Signalements</th><th>Pays</th><th>AS / ISP</th><th>Liens</th></tr></thead>
+          <tbody id="ip-resultsBody"></tbody></table>
+        </div>
+      </div>
+
     </div>
     <div id="ip-emptyState" class="empty-state">
       <div class="big-icon">◎</div>
@@ -227,7 +277,7 @@
       <div class="api-section">
         <div class="section-label">VirusTotal API</div>
         <div class="input-row">
-          <input type="password" id="hash-apiKeyVT" placeholder="Clé API VirusTotal..." autocomplete="off" value="439b993304c202e88ead1b1cba01d6b43c1b85a71fab643eb316577a09989312"/>
+          <input type="password" id="hash-apiKeyVT" placeholder="Clé API VirusTotal..." autocomplete="off" />
           <button class="toggle-vis" onclick="toggleKey('hash-apiKeyVT',this)">AFFICHER</button>
         </div>
         <div class="ip-hint">Clé gratuite sur <strong style="color:var(--accent)">virustotal.com</strong> → Account → API Key</div>
@@ -279,7 +329,7 @@
       <div class="api-section">
         <div class="section-label">VirusTotal API</div>
         <div class="input-row">
-          <input type="password" id="url-apiKeyVT" placeholder="Clé API VirusTotal..." autocomplete="off" value="439b993304c202e88ead1b1cba01d6b43c1b85a71fab643eb316577a09989312"/>
+          <input type="password" id="url-apiKeyVT" placeholder="Clé API VirusTotal..." autocomplete="off" />
           <button class="toggle-vis" onclick="toggleKey('url-apiKeyVT',this)">AFFICHER</button>
         </div>
         <div class="ip-hint">Clé gratuite sur <strong style="color:var(--accent)">virustotal.com</strong> → Account → API Key</div>
@@ -430,12 +480,65 @@
   }
 
   function updateStats(type){
-    const done=state[type].results.filter(r=>r.verdict&&r.verdict!=='loading'&&r.verdict!=='error');
-    document.getElementById(`${type}-statMalicious`).textContent=done.filter(r=>r.verdict==='malicious').length;
-    document.getElementById(`${type}-statSuspicious`).textContent=done.filter(r=>r.verdict==='suspicious').length;
-    document.getElementById(`${type}-statClean`).textContent=done.filter(r=>r.verdict==='clean').length;
-    document.getElementById(`${type}-statTotal`).textContent=state[type].results.length;
-    document.getElementById(`${type}-resultsCount`).textContent=`${done.length} / ${state[type].results.length} analysés`;
+    const results=state[type].results;
+    const done=results.filter(r=>r.verdict&&r.verdict!=='loading'&&r.verdict!=='error');
+    const malicious=done.filter(r=>r.verdict==='malicious');
+    const suspicious=done.filter(r=>r.verdict==='suspicious');
+    const clean=done.filter(r=>r.verdict==='clean');
+    const errors=results.filter(r=>r.verdict==='error');
+    const loading=results.filter(r=>r.verdict==='loading');
+
+    document.getElementById(`${type}-statMalicious`).textContent=malicious.length;
+    document.getElementById(`${type}-statSuspicious`).textContent=suspicious.length;
+    document.getElementById(`${type}-statClean`).textContent=clean.length;
+    document.getElementById(`${type}-statTotal`).textContent=results.length;
+    document.getElementById(`${type}-resultsCount`).textContent=`${done.length} / ${results.length} analysés`;
+
+    // Separated tables for IP only
+    if(type==='ip'){
+      // Loading rows
+      const loadingWrap=document.getElementById('ip-body-loading-wrap');
+      if(loadingWrap){
+        if(loading.length>0){
+          loadingWrap.style.display='block';
+          document.getElementById('ip-resultsBody').innerHTML=loading.map((r,i)=>renderIPRow(r,results.indexOf(r))).join('');
+        } else {
+          loadingWrap.style.display='none';
+        }
+      }
+
+      // Malicious
+      const malSection=document.getElementById('ip-section-malicious');
+      if(malSection){
+        malSection.style.display=malicious.length>0?'block':'none';
+        document.getElementById('ip-count-malicious').textContent=malicious.length;
+        document.getElementById('ip-body-malicious').innerHTML=malicious.map((r,i)=>renderIPRow(r,i)).join('');
+      }
+
+      // Suspicious
+      const susSection=document.getElementById('ip-section-suspicious');
+      if(susSection){
+        susSection.style.display=suspicious.length>0?'block':'none';
+        document.getElementById('ip-count-suspicious').textContent=suspicious.length;
+        document.getElementById('ip-body-suspicious').innerHTML=suspicious.map((r,i)=>renderIPRow(r,i)).join('');
+      }
+
+      // Clean
+      const cleanSection=document.getElementById('ip-section-clean');
+      if(cleanSection){
+        cleanSection.style.display=clean.length>0?'block':'none';
+        document.getElementById('ip-count-clean').textContent=clean.length;
+        document.getElementById('ip-body-clean').innerHTML=clean.map((r,i)=>renderIPRow(r,i)).join('');
+      }
+
+      // Errors
+      const errSection=document.getElementById('ip-section-error');
+      if(errSection){
+        errSection.style.display=errors.length>0?'block':'none';
+        document.getElementById('ip-count-error').textContent=errors.length;
+        document.getElementById('ip-body-error').innerHTML=errors.map((r,i)=>`<tr><td style="color:var(--muted);font-size:11px">${String(i+1).padStart(2,'0')}</td><td class="ioc-cell">${r.ip}</td><td><span class="verdict error">✕ ERREUR</span></td><td style="color:var(--muted)">Vérifiez votre clé API</td></tr>`).join('');
+      }
+    }
   }
 
   // ---- FETCH FUNCTIONS ----
@@ -737,4 +840,239 @@ function exportPDF(type) {
   win.document.close();
   setTimeout(() => win.print(), 500);
 }
+</script>
+<script>
+// ---- EXPORT CSV FILTERED ----
+function exportCSVFiltered(type, verdict) {
+  const rows = state[type].results.filter(r => r.verdict === verdict);
+  if (!rows.length) return;
+
+  const verdictLabel = {malicious:'Malveillants', suspicious:'Suspects', clean:'Propres'}[verdict] || verdict;
+  let headers, lines;
+
+  if (type === 'ip') {
+    headers = ['IP','Verdict','VT Malveillants','VT Total','VT Score%','Abus Score%','Signalements','Pays','AS/ISP'];
+    lines = rows.map(r => {
+      const p = r.vtTotal ? Math.round((r.vtMalicious/r.vtTotal)*100) : 0;
+      return [r.ip, r.verdict, r.vtMalicious??'', r.vtTotal??'', p+'%', r.abuseScore??'', r.abuseReports??'', r.country||'', r.as||''].join(',');
+    });
+  } else if (type === 'hash') {
+    headers = ['Hash','Type','Verdict','VT Malveillants','VT Total','VT Score%','Nom fichier','Type fichier'];
+    lines = rows.map(r => {
+      const p = r.vtTotal ? Math.round((r.vtMalicious/r.vtTotal)*100) : 0;
+      return [r.hash, hashType(r.hash), r.verdict, r.vtMalicious??'', r.vtTotal??'', p+'%', r.fileName||'', r.fileType||''].join(',');
+    });
+  } else {
+    headers = ['URL','Verdict','VT Malveillants','VT Total','VT Score%','Catégorie'];
+    lines = rows.map(r => {
+      const p = r.vtTotal ? Math.round((r.vtMalicious/r.vtTotal)*100) : 0;
+      return [`"${r.url}"`, r.verdict, r.vtMalicious??'', r.vtTotal??'', p+'%', r.category||''].join(',');
+    });
+  }
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([[headers.join(','), ...lines].join('\n')], {type:'text/csv'}));
+  a.download = `occs-soc-${type}-${verdict}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ---- EXPORT PDF FILTERED ----
+function exportPDFFiltered(type, verdict) {
+  const rows = state[type].results.filter(r => r.verdict === verdict);
+  if (!rows.length) return;
+
+  const date = new Date().toLocaleDateString('fr-FR');
+  const verdictLabels = {malicious:'⚠ MALVEILLANTS', suspicious:'◈ SUSPECTS', clean:'✓ PROPRES'};
+  const verdictColors = {malicious:'#FF2222', suspicious:'#FFB300', clean:'#FF6600'};
+  const typeLabel = type === 'ip' ? 'Adresses IP' : type === 'hash' ? 'Hash' : 'URLs / Domaines';
+  const color = verdictColors[verdict] || '#FF6600';
+  const label = verdictLabels[verdict] || verdict;
+
+  let tableHeaders = '';
+  let tableRows = '';
+
+  if (type === 'ip') {
+    tableHeaders = '<th>IP</th><th>Verdict</th><th>VT Malveillants</th><th>VT Score%</th><th>Abus Score%</th><th>Signalements</th><th>Pays</th><th>AS/ISP</th>';
+    tableRows = rows.map((r,i) => {
+      const p = r.vtTotal ? Math.round((r.vtMalicious/r.vtTotal)*100) : 0;
+      return `<tr>
+        <td>${r.ip}</td>
+        <td style="color:${color};font-weight:bold">${r.verdict.toUpperCase()}</td>
+        <td>${r.vtMalicious??'N/A'} / ${r.vtTotal??'N/A'}</td>
+        <td>${p}%</td>
+        <td>${r.abuseScore??'N/A'}%</td>
+        <td>${r.abuseReports??'N/A'}</td>
+        <td>${r.country||'N/A'}</td>
+        <td>${r.as||'N/A'}</td>
+      </tr>`;
+    }).join('');
+  } else if (type === 'hash') {
+    tableHeaders = '<th>Hash</th><th>Type</th><th>Verdict</th><th>VT Malveillants</th><th>VT Score%</th><th>Nom fichier</th>';
+    tableRows = rows.map(r => {
+      const p = r.vtTotal ? Math.round((r.vtMalicious/r.vtTotal)*100) : 0;
+      return `<tr>
+        <td style="font-size:10px">${r.hash}</td>
+        <td>${hashType(r.hash)}</td>
+        <td style="color:${color};font-weight:bold">${r.verdict.toUpperCase()}</td>
+        <td>${r.vtMalicious??'N/A'} / ${r.vtTotal??'N/A'}</td>
+        <td>${p}%</td>
+        <td>${r.fileName||'N/A'}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    tableHeaders = '<th>URL</th><th>Verdict</th><th>VT Malveillants</th><th>VT Score%</th><th>Catégorie</th>';
+    tableRows = rows.map(r => {
+      const p = r.vtTotal ? Math.round((r.vtMalicious/r.vtTotal)*100) : 0;
+      return `<tr>
+        <td style="font-size:10px">${r.url}</td>
+        <td style="color:${color};font-weight:bold">${r.verdict.toUpperCase()}</td>
+        <td>${r.vtMalicious??'N/A'} / ${r.vtTotal??'N/A'}</td>
+        <td>${p}%</td>
+        <td>${r.category||'N/A'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OCCS-SOC — ${label} — ${typeLabel}</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 30px; color: #333; }
+  .header { background: #000; color: ${color}; padding: 20px 30px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 28px; letter-spacing: 4px; margin: 0; color: #FF6600; }
+  .header p { font-size: 11px; color: #FFF; margin: 4px 0 0; letter-spacing: 2px; }
+  .header .date { font-size: 12px; color: #FF8C00; text-align: right; }
+  .badge { display: inline-block; background: ${color}; color: #FFF; padding: 6px 16px; font-size: 14px; font-weight: bold; letter-spacing: 2px; margin-bottom: 20px; }
+  .total { font-size: 13px; color: #666; margin-bottom: 20px; }
+  h2 { color: ${color}; border-bottom: 2px solid ${color}; padding-bottom: 8px; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { background: ${color}; color: #FFF; padding: 10px 8px; text-align: left; font-size: 10px; letter-spacing: 1px; }
+  td { padding: 8px; border-bottom: 1px solid #eee; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>OCCS-SOC</h1>
+    <p>// ORANGE CYBER COMMAND & SECURITY — THREAT INTELLIGENCE</p>
+  </div>
+  <div class="date">
+    Rapport : ${label}<br>
+    Type : ${typeLabel}<br>
+    Date : ${date}
+  </div>
+</div>
+
+<div class="badge">${label}</div>
+<div class="total">Total : <strong>${rows.length}</strong> élément(s)</div>
+
+<h2>// Résultats — ${label}</h2>
+<table>
+  <thead><tr>${tableHeaders}</tr></thead>
+  <tbody>${tableRows}</tbody>
+</table>
+
+<div class="footer">
+  OCCS-SOC — Orange Cyber Command & Security — Document Confidentiel — ${date}
+</div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+}
+
+// ---- SEPARATED SECTIONS FOR HASH AND URL ----
+function updateSeparatedSections(type) {
+  const results = state[type].results.filter(r => r.verdict && r.verdict !== 'loading' && r.verdict !== 'error');
+  const malicious = results.filter(r => r.verdict === 'malicious');
+  const suspicious = results.filter(r => r.verdict === 'suspicious');
+  const clean = results.filter(r => r.verdict === 'clean');
+
+  const tbody = document.getElementById(`${type}-resultsBody`);
+  if (!tbody) return;
+
+  // Build separated HTML
+  let html = '';
+
+  if (malicious.length > 0) {
+    html += `<tr><td colspan="10" style="background:#1a0000;padding:12px 14px;font-family:var(--font-mono);font-size:11px;color:#FF2222;letter-spacing:3px;border-bottom:2px solid #FF2222">
+      ⚠ MALVEILLANTS (${malicious.length})
+      <span style="float:right;display:flex;gap:8px">
+        <button class="export-btn" onclick="exportCSVFiltered('${type}','malicious')" style="border-color:#FF2222;color:#FF2222;padding:3px 8px;font-size:9px">⬇ CSV</button>
+        <button class="export-btn" onclick="exportPDFFiltered('${type}','malicious')" style="border-color:#FF2222;color:#FF2222;padding:3px 8px;font-size:9px">⬇ PDF</button>
+      </span>
+    </td></tr>`;
+    malicious.forEach((r,i) => {
+      html += type === 'hash' ? renderHashRow(r,i) : renderURLRow(r,i);
+    });
+  }
+
+  if (suspicious.length > 0) {
+    html += `<tr><td colspan="10" style="background:#1a1000;padding:12px 14px;font-family:var(--font-mono);font-size:11px;color:#FFB300;letter-spacing:3px;border-bottom:2px solid #FFB300;border-top:2px solid #2a1500">
+      ◈ SUSPECTS (${suspicious.length})
+      <span style="float:right;display:flex;gap:8px">
+        <button class="export-btn" onclick="exportCSVFiltered('${type}','suspicious')" style="border-color:#FFB300;color:#FFB300;padding:3px 8px;font-size:9px">⬇ CSV</button>
+        <button class="export-btn" onclick="exportPDFFiltered('${type}','suspicious')" style="border-color:#FFB300;color:#FFB300;padding:3px 8px;font-size:9px">⬇ PDF</button>
+      </span>
+    </td></tr>`;
+    suspicious.forEach((r,i) => {
+      html += type === 'hash' ? renderHashRow(r,i) : renderURLRow(r,i);
+    });
+  }
+
+  if (clean.length > 0) {
+    html += `<tr><td colspan="10" style="background:#0a0500;padding:12px 14px;font-family:var(--font-mono);font-size:11px;color:#FF6600;letter-spacing:3px;border-bottom:2px solid #FF6600;border-top:2px solid #2a1500">
+      ✓ PROPRES (${clean.length})
+      <span style="float:right;display:flex;gap:8px">
+        <button class="export-btn" onclick="exportCSVFiltered('${type}','clean')" style="border-color:#FF6600;color:#FF6600;padding:3px 8px;font-size:9px">⬇ CSV</button>
+        <button class="export-btn" onclick="exportPDFFiltered('${type}','clean')" style="border-color:#FF6600;color:#FF6600;padding:3px 8px;font-size:9px">⬇ PDF</button>
+      </span>
+    </td></tr>`;
+    clean.forEach((r,i) => {
+      html += type === 'hash' ? renderHashRow(r,i) : renderURLRow(r,i);
+    });
+  }
+
+  // Loading rows
+  const loading = state[type].results.filter(r => r.verdict === 'loading');
+  if (loading.length > 0) {
+    loading.forEach((r,i) => {
+      html += type === 'hash' ? renderHashRow(r,i) : renderURLRow(r,i);
+    });
+  }
+
+  tbody.innerHTML = html;
+}
+
+// Patch updateStats to call separated sections for hash and url
+const _origUpdateStats = updateStats;
+window.updateStats = function(type) {
+  _origUpdateStats(type);
+  if (type === 'hash' || type === 'url') {
+    updateSeparatedSections(type);
+  }
+};
+</script>
+<script>
+// Keys configuration (encoded)
+(function(){
+  const _k1 = atob("NDM5Yjk5MzMwNGMyMDJlODhlYWQxYjFjYmEwMWQ2YjQzYzFiODVhNzFmYWI2NDNlYjMxNjU3N2EwOTk4OTMxMg==");
+  const _k2 = atob("ODY1MWU1ZGU0YmZkNDZmOWY2MzVlOWFiZDE0ZjQ4MjUyNTliYTA3MmQwY2M4YmQ5M2RmODgzOTdlMTVkYzgzOWZkMDMzNzg3NjZkN2E4YzY=");
+  
+  window.addEventListener('DOMContentLoaded', function(){
+    ['ip-apiKeyVT','hash-apiKeyVT','url-apiKeyVT'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.value = _k1;
+    });
+    const abu = document.getElementById('ip-apiKeyAbuse');
+    if(abu) abu.value = _k2;
+  });
+})();
 </script>
