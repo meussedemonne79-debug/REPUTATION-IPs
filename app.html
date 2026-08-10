@@ -584,7 +584,8 @@
     document.getElementById(`${type}-scanBtn`).innerHTML='<span class="spinner"></span><span>ARRÊTER</span>';
     document.getElementById(`${type}-resultsSection`).style.display='block';
     document.getElementById(`${type}-emptyState`).style.display='none';
-    document.getElementById(`${type}-exportBtn`).style.display='none';
+    const _expBtn=document.getElementById(`${type}-exportBtn`); if(_expBtn) _expBtn.style.display='none';
+    const _pdfBtn=document.getElementById(`${type}-exportPdfBtn`); if(_pdfBtn) _pdfBtn.style.display='none';
 
     const tbody=document.getElementById(`${type}-resultsBody`);
     tbody.innerHTML=s.results.map((r,i)=>type==='ip'?renderIPRow(r,i):type==='hash'?renderHashRow(r,i):renderURLRow(r,i)).join('');
