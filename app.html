@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OCCS-SOC — Orange Cyber Cloud Security</title>
+<title>OCCS-SOC — Orange Cloud & Cyber Solutions</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -39,7 +39,7 @@
   .api-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
   .api-section { background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--accent); padding:20px 24px; }
   .section-label { font-family:var(--font-mono); font-size:10px; color:#FFF; letter-spacing:3px; text-transform:uppercase; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
-  .section-label::before { content:'//'; color:var(--accent); }
+  .section-label-before-DISABLED { content:'//'; color:var(--accent); }
   .input-row { display:flex; gap:12px; align-items:center; }
   input[type="text"],input[type="password"],textarea { background:var(--surface); border:1px solid var(--border); color:#FFF; font-family:var(--font-mono); font-size:13px; padding:10px 14px; outline:none; transition:border-color 0.2s,box-shadow 0.2s; width:100%; }
   input:focus,textarea:focus { border-color:var(--accent); box-shadow:0 0 14px rgba(255,102,0,0.25); }
@@ -148,7 +148,7 @@
     </div>
     <div class="header-text">
       <h1>OCCS-SOC</h1>
-      <p>ORANGE CYBER CLOUD SECURITY — THREAT INTELLIGENCE v3.0</p>
+      <p>ORANGE CLOUD & CYBER SOLUTIONS — THREAT INTELLIGENCE v3.0</p>
     </div>
     <div class="header-badge">● ONLINE</div>
   </header>
@@ -808,7 +808,7 @@ function exportPDF(type) {
 <div class="header">
   <div>
     <h1>OCCS-SOC</h1>
-    <p>ORANGE CYBER CLOUD SECURITY — THREAT INTELLIGENCE</p>
+    <p>ORANGE CLOUD & CYBER SOLUTIONS — THREAT INTELLIGENCE</p>
   </div>
   <div class="date">
     Rapport : ${typeLabel}<br>
@@ -831,7 +831,7 @@ function exportPDF(type) {
 </table>
 
 <div class="footer">
-  OCCS-SOC — Orange Cyber Cloud Security — Document Confidentiel — ${date}
+  OCCS-SOC — Orange Cloud & Cyber Solutions — Document Confidentiel — ${date}
 </div>
 </body>
 </html>`;
@@ -959,7 +959,7 @@ function exportPDFFiltered(type, verdict) {
 <div class="header">
   <div>
     <h1>OCCS-SOC</h1>
-    <p>ORANGE CYBER CLOUD SECURITY — THREAT INTELLIGENCE</p>
+    <p>ORANGE CLOUD & CYBER SOLUTIONS — THREAT INTELLIGENCE</p>
   </div>
   <div class="date">
     Rapport : ${label}<br>
@@ -978,7 +978,7 @@ function exportPDFFiltered(type, verdict) {
 </table>
 
 <div class="footer">
-  OCCS-SOC — Orange Cyber Cloud Security — Document Confidentiel — ${date}
+  OCCS-SOC — Orange Cloud & Cyber Solutions — Document Confidentiel — ${date}
 </div>
 </body>
 </html>`;
