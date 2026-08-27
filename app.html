@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OCCS-SOC — Orange Cyber Command & Security</title>
+<title>OCCS-SOC — Orange Cyber Cloud Security</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -148,7 +148,7 @@
     </div>
     <div class="header-text">
       <h1>OCCS-SOC</h1>
-      <p>// ORANGE CYBER COMMAND & SECURITY — THREAT INTELLIGENCE v3.0</p>
+      <p>ORANGE CYBER CLOUD SECURITY — THREAT INTELLIGENCE v3.0</p>
     </div>
     <div class="header-badge">● ONLINE</div>
   </header>
@@ -192,7 +192,7 @@
     </div>
     <div id="ip-resultsSection" style="display:none">
       <div class="results-header">
-        <div class="results-title">// Rapport IP</div>
+        <div class="results-title">Rapport IP</div>
         <div class="results-count" id="ip-resultsCount"></div>
       </div>
       <div class="stats-row">
@@ -297,7 +297,7 @@
     </div>
     <div id="hash-resultsSection" style="display:none">
       <div class="results-header">
-        <div class="results-title">// Rapport Hash</div>
+        <div class="results-title">Rapport Hash</div>
         <div class="results-count" id="hash-resultsCount"></div>
       </div>
       <div class="stats-row">
@@ -349,7 +349,7 @@
     </div>
     <div id="url-resultsSection" style="display:none">
       <div class="results-header">
-        <div class="results-title">// Rapport URL / Domaine</div>
+        <div class="results-title">Rapport URL / Domaine</div>
         <div class="results-count" id="url-resultsCount"></div>
       </div>
       <div class="stats-row">
@@ -808,7 +808,7 @@ function exportPDF(type) {
 <div class="header">
   <div>
     <h1>OCCS-SOC</h1>
-    <p>// ORANGE CYBER COMMAND & SECURITY — THREAT INTELLIGENCE</p>
+    <p>ORANGE CYBER CLOUD SECURITY — THREAT INTELLIGENCE</p>
   </div>
   <div class="date">
     Rapport : ${typeLabel}<br>
@@ -824,14 +824,14 @@ function exportPDF(type) {
   <div class="stat info"><div class="num">${rows.length}</div><div class="label">Total</div></div>
 </div>
 
-<h2>// Résultats d'analyse — ${typeLabel}</h2>
+<h2>Résultats d'analyse — ${typeLabel}</h2>
 <table>
   <thead><tr>${tableHeaders}</tr></thead>
   <tbody>${tableRows}</tbody>
 </table>
 
 <div class="footer">
-  OCCS-SOC — Orange Cyber Command & Security — Document Confidentiel — ${date}
+  OCCS-SOC — Orange Cyber Cloud Security — Document Confidentiel — ${date}
 </div>
 </body>
 </html>`;
@@ -959,7 +959,7 @@ function exportPDFFiltered(type, verdict) {
 <div class="header">
   <div>
     <h1>OCCS-SOC</h1>
-    <p>// ORANGE CYBER COMMAND & SECURITY — THREAT INTELLIGENCE</p>
+    <p>ORANGE CYBER CLOUD SECURITY — THREAT INTELLIGENCE</p>
   </div>
   <div class="date">
     Rapport : ${label}<br>
@@ -971,14 +971,14 @@ function exportPDFFiltered(type, verdict) {
 <div class="badge">${label}</div>
 <div class="total">Total : <strong>${rows.length}</strong> élément(s)</div>
 
-<h2>// Résultats — ${label}</h2>
+<h2>Résultats — ${label}</h2>
 <table>
   <thead><tr>${tableHeaders}</tr></thead>
   <tbody>${tableRows}</tbody>
 </table>
 
 <div class="footer">
-  OCCS-SOC — Orange Cyber Command & Security — Document Confidentiel — ${date}
+  OCCS-SOC — Orange Cyber Cloud Security — Document Confidentiel — ${date}
 </div>
 </body>
 </html>`;
