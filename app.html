@@ -543,7 +543,7 @@
 
   // ---- FETCH FUNCTIONS ----
   async function fetchVT(endpoint,key){
-    const url=`https://corsproxy.io/?url=https://www.virustotal.com/api/v3/${endpoint}`;
+    const url=`https://occs-soc-backend-1.onrender.com/vtapi/${endpoint}`;
     const r=await fetch(url,{headers:{'x-apikey':key}});
     if(r.status===429)throw new Error('RATE_LIMIT_VT');
     if(r.status===401)throw new Error('AUTH_ERROR_VT');
@@ -552,7 +552,7 @@
   }
 
   async function fetchAbuse(ip,key){
-    const url=`https://corsproxy.io/?url=https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}&maxAgeInDays=90`;
+    const url=`https://occs-soc-backend-1.onrender.com/abuseapi/check?ipAddress=${ip}&maxAgeInDays=90`;
     const r=await fetch(url,{headers:{'Key':key,'Accept':'application/json'}});
     if(r.status===429)throw new Error('RATE_LIMIT_ABU');
     if(r.status===401)throw new Error('AUTH_ERROR_ABU');
@@ -627,7 +627,7 @@
           try{ d=await fetchVT(`urls/${encoded}`,vtKey); }
           catch(e){
             // If not found, submit URL first
-            const submitUrl=`https://corsproxy.io/?url=https://www.virustotal.com/api/v3/urls`;
+            const submitUrl=`https://occs-soc-backend-1.onrender.com/vtapi/urls`;
             const form=new URLSearchParams();form.append('url',ioc);
             await fetch(submitUrl,{method:'POST',headers:{'x-apikey':vtKey,'Content-Type':'application/x-www-form-urlencoded'},body:form.toString()});
             await new Promise(r=>setTimeout(r,5000));
